@@ -1422,39 +1422,61 @@ Castastics is a world of large casts of unique characters and make all dreams co
     </div>
 
     </div> </div>
-<!-- AUTOMATICALLY HIDE MOVIES/TV ON OTHER PAGES -->
+<!-- BULLETPROOF NAVIGATION FIX -->
 <script>
-document.addEventListener("click", function(e) {
-    // Check if a navigation item was clicked
-    if (e.target.classList.contains('nav-item') || e.target.getAttribute('onclick')) {
-        setTimeout(function() {
-            // Find your movie titles and video players
-            const moviesTitle = document.querySelector('.section-title:contains("CASTASTICS MOVIES")') || [...document.querySelectorAll('.section-title')].find(el => el.textContent.includes('CASTASTICS MOVIES'));
-            const tvTitle = [...document.querySelectorAll('.section-title')].find(el => el.textContent.includes('TV SHOWS'));
-            const videoDisplay = document.getElementById('video-display');
-            const mediaBox = document.getElementById('media-interaction-box');
-            const movieGrids = document.querySelectorAll('.grid'); // Targets grids below the titles
-
-            // Check if home page is hidden
-            const homePage = document.getElementById('page-home');
-            if (homePage && homePage.style.display === 'none') {
-                // Hide everything leaking
-                if(moviesTitle) moviesTitle.style.display = 'none';
-                if(tvTitle) tvTitle.style.display = 'none';
-                if(videoDisplay) videoDisplay.style.display = 'none';
-                if(mediaBox) mediaBox.style.display = 'none';
-                movieGrids.forEach(grid => grid.style.display = 'none');
-            } else {
-                // Bring them back when on home page
-                if(moviesTitle) moviesTitle.style.display = 'block';
-                if(tvTitle) tvTitle.style.display = 'block';
-                if(videoDisplay) videoDisplay.style.display = 'block';
-                if(mediaBox) mediaBox.style.display = 'block';
-                movieGrids.forEach(grid => grid.style.display = 'grid');
+function fixLeakingLayout() {
+    setTimeout(function() {
+        const homePage = document.getElementById('page-home');
+        const isHomeHidden = homePage && (homePage.style.display === 'none' || homePage.classList.contains('hidden'));
+        
+        // 1. Find and handle the leaking headers aggressively by their text content
+        const allElements = document.querySelectorAll('div, h1, h2, h3, h4, p, span, section');
+        allElements.forEach(el => {
+            const text = el.textContent || '';
+            if (text.includes('CASTASTICS MOVIES') || text.includes('TV SHOWS')) {
+                // If the element contains child blocks, skip it so we don't hide the whole page wrapper
+                if (el.children.length < 3) {
+                    el.style.display = isHomeHidden ? 'none' : 'block';
+                }
             }
-        }, 50); // Small delay to let your switchPage function run first
+        });
+
+        // 2. Target the specific layout boxes and grids
+        const videoDisplay = document.getElementById('video-display');
+        const mediaBox = document.getElementById('media-interaction-box');
+        const grids = document.querySelectorAll('.grid');
+        
+        if (isHomeHidden) {
+            if (videoDisplay) videoDisplay.style.display = 'none';
+            if (mediaBox) mediaBox.style.display = 'none';
+            grids.forEach(g => g.style.display = 'none');
+        } else {
+            if (videoDisplay) videoDisplay.style.display = 'block';
+            if (mediaBox) mediaBox.style.display = 'block';
+            grids.forEach(g => g.style.display = 'grid');
+        }
+
+        // 3. FORCE THE FOOTER DOWN: Reset layout tracking globally
+        const footer = document.querySelector('footer');
+        if (footer) {
+            footer.style.setProperty('clear', 'both', 'important');
+            footer.style.setProperty('float', 'none', 'important');
+            footer.style.setProperty('display', 'block', 'important');
+            footer.style.setProperty('width', '100%', 'important');
+            footer.style.setProperty('position', 'relative', 'important');
+        }
+    }, 60); // Small delay to guarantee it fires right after your switchPage code runs
+}
+
+// Watch for clicks on any navigation element
+document.addEventListener("click", function(e) {
+    if (e.target.classList.contains('nav-item') || e.target.closest('.nav-menu') || e.target.getAttribute('onclick')) {
+        fixLeakingLayout();
     }
 });
-</script>
+
+// Run immediately on load just in case
+window.addEventListener('load', fixLeakingLayout);
+                    </script>
 </body>
 </html>
