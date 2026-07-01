@@ -1339,19 +1339,63 @@ Castastics is a world of large casts of unique characters and make all dreams co
             wrapper.classList.toggle('sidebar-active');
         }
     }
-
-    // Dynamic Page Switching Logic
+     
+    // Dynamic Page Switching Logic with Fail-Safe Home Cleanup
     function switchPage(pageId) {
+        // 1. Hide all main sub-page blocks
         var pages = document.querySelectorAll('.app-page');
         pages.forEach(function(p) {
             p.style.display = 'none';
         });
 
-        var targetPage = document.getElementById('page-' + pageId);
-        if (targetPage) {
-            targetPage.style.display = 'block';
+        // 2. Target specific elements that only belong on the Home Page
+        // Add any specific IDs your sections use inside this array (e.g., 'player-container')
+        var homeElements = [
+            document.querySelector('.channel-header'),
+            document.querySelector('.channel-details'),
+            document.querySelector('.channel-links'),
+            document.getElementById('player-container'),
+            document.getElementById('video-display'),
+            document.getElementById('now-playing')
+        ];
+
+        // 3. Check if we are going to Merch or Contact
+        if (pageId === 'merch' || pageId === 'contact') {
+            // Forcefully hide all home sections, videos, headers, and grids
+            homeElements.forEach(function(el) {
+                if (el) el.style.setProperty('display', 'none', 'important');
+            });
+            
+            // If your trailers/promos/movies are inside a row or grid right above the script, hide them too:
+            var grids = document.querySelectorAll('.card-grid, .grid, .row, iframe, h2, h3');
+            grids.forEach(function(g) {
+                // Only hide them if they are NOT inside the active merch/contact pages
+                if (!g.closest('#page-merch') && !g.closest('#page-contact')) {
+                    g.style.setProperty('display', 'none', 'important');
+                }
+            });
+        } else if (pageId === 'home') {
+            // If switching back to Home, restore the header structures
+            homeElements.forEach(function(el) {
+                if (el) el.style.display = '';
+            });
+            
+            // Restore hidden layout grids/videos for the home screen
+            var grids = document.querySelectorAll('.card-grid, .grid, .row, iframe, h2, h3');
+            grids.forEach(function(g) {
+                if (!g.closest('#page-merch') && !g.closest('#page-contact')) {
+                    g.style.display = '';
+                }
+            });
         }
 
+        // 4. Reveal the target page container
+        var targetPage = document.getElementById('page-' + pageId);
+        if (targetPage) {
+            targetPage.style.setProperty('display', 'block', 'important');
+        }
+
+        // 5. Reset navigation highlights
         var navItems = document.querySelectorAll('.nav-menu .nav-item');
         navItems.forEach(function(item) {
             item.classList.remove('active');
@@ -1361,6 +1405,7 @@ Castastics is a world of large casts of unique characters and make all dreams co
             window.event.currentTarget.classList.add('active');
         }
 
+        // 6. Close sidebar
         var sidebar = document.getElementById('app-sidebar');
         var wrapper = document.getElementById('castastics-interface');
         if (sidebar && wrapper) {
