@@ -1422,47 +1422,39 @@ Castastics is a world of large casts of unique characters and make all dreams co
     </div>
 
     </div> </div>
+<!-- AUTOMATICALLY HIDE MOVIES/TV ON OTHER PAGES -->
+<script>
+document.addEventListener("click", function(e) {
+    // Check if a navigation item was clicked
+    if (e.target.classList.contains('nav-item') || e.target.getAttribute('onclick')) {
+        setTimeout(function() {
+            // Find your movie titles and video players
+            const moviesTitle = document.querySelector('.section-title:contains("CASTASTICS MOVIES")') || [...document.querySelectorAll('.section-title')].find(el => el.textContent.includes('CASTASTICS MOVIES'));
+            const tvTitle = [...document.querySelectorAll('.section-title')].find(el => el.textContent.includes('TV SHOWS'));
+            const videoDisplay = document.getElementById('video-display');
+            const mediaBox = document.getElementById('media-interaction-box');
+            const movieGrids = document.querySelectorAll('.grid'); // Targets grids below the titles
 
-    <!-- 🚀 ULTIMATE LAYOUT & PAGE FIX OVERRIDE -->
-<style>
-    /* 1. Force the footer to stay at the very bottom, completely ignoring floats */
-    footer {
-        display: block !important;
-        clear: both !important;
-        float: none !important;
-        width: 100% !important;
-        position: relative !important;
-        margin-top: 50px !important;
+            // Check if home page is hidden
+            const homePage = document.getElementById('page-home');
+            if (homePage && homePage.style.display === 'none') {
+                // Hide everything leaking
+                if(moviesTitle) moviesTitle.style.display = 'none';
+                if(tvTitle) tvTitle.style.display = 'none';
+                if(videoDisplay) videoDisplay.style.display = 'none';
+                if(mediaBox) mediaBox.style.display = 'none';
+                movieGrids.forEach(grid => grid.style.display = 'none');
+            } else {
+                // Bring them back when on home page
+                if(moviesTitle) moviesTitle.style.display = 'block';
+                if(tvTitle) tvTitle.style.display = 'block';
+                if(videoDisplay) videoDisplay.style.display = 'block';
+                if(mediaBox) mediaBox.style.display = 'block';
+                movieGrids.forEach(grid => grid.style.display = 'grid');
+            }
+        }, 50); // Small delay to let your switchPage function run first
     }
-
-    /* 2. Fix the split-screen layout bug causing the massive black void */
-    #castastics-interface, 
-    .main-content, 
-    body {
-        display: block !important;
-        overflow-x: hidden;
-    }
-
-    /* 3. When Merch or Contact page is active, forcefully hide the Home layout columns */
-    body:has(#page-merch:not([style*="display: none"])),
-    body:has(#page-contact:not([style*="display: none"])) {
-        /* Hide channel headers, trailers, and dropdowns when on another page */
-        .channel-header, 
-        .channel-details, 
-        .channel-links,
-        .channel-links-container,
-        .channel-links-break,
-        .channel-links-text-bar,
-        .castastics-brand-links,
-        .video-section,
-        #player-container,
-        .card-grid,
-        h2, 
-        p,
-        iframe { 
-            display: none !important; 
-        }
-    }
-</style>
+});
+</script>
 </body>
 </html>
